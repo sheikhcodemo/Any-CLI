@@ -1,0 +1,11 @@
+[
+    {
+        "text": "<s>[INST] Write a Python function to calculate the factorial of a number. [/INST] def factorial(n):\\n    if n == 0:\\n        return 1\\n    else:\\n        return n * factorial(n-1)</s>"
+    },
+    {
+        "text": "<s>[INST] What is the difference between a list and a tuple in Python? [/INST] The main difference is that lists are mutable, while tuples are immutable. This means you can change a list after it's created, but you can't change a tuple.</s>"
+    },
+    {
+        "text": "<s>[INST] How do you create a virtual environment in Python? [/INST] You can create a virtual environment using the `venv` module. For example: `python3 -m venv myenv`</s>"
+    }
+]

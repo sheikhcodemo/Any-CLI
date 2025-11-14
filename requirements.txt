@@ -1,0 +1,5 @@
+typer[all]
+transformers
+torch
+datasets
+accelerate
