@@ -1,36 +1,55 @@
 #!/usr/bin/env python3
-import argparse
-import sys
+import typer
+import json
+from pathlib import Path
 from src.router import route_prompt
 from src.llm import query_model
 
-def main():
+app = typer.Typer()
+STATE_FILE = Path(".cli_state.json")
+
+def read_state():
+    if not STATE_FILE.exists():
+        return {"model": None}
+    with open(STATE_FILE, "r") as f:
+        return json.load(f)
+
+def write_state(state):
+    with open(STATE_FILE, "w") as f:
+        json.dump(state, f)
+
+@app.command()
+def model(model_name: str = typer.Argument(..., help="The name of the model to use")):
     """
-    Main function for the Any-CLI application.
+    Select or change the AI model.
     """
-    parser = argparse.ArgumentParser(
-        description="Any-CLI: A tool that uses AI to help with software engineering tasks."
-    )
-    parser.add_argument("prompt", type=str, help="The user's prompt")
+    state = read_state()
+    state["model"] = model_name
+    write_state(state)
+    typer.echo(f"INFO: Model set to: {model_name}")
 
-    if len(sys.argv) == 1:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
-
-    args = parser.parse_args()
-
+@app.command()
+def run(prompt: str = typer.Argument(..., help="The user's prompt")):
+    """
+    Any-CLI: A tool that uses AI to help with software engineering tasks.
+    """
+    state = read_state()
     try:
         # 1. Route the prompt to the best model
-        model = route_prompt(args.prompt)
-        print(f"INFO: Routing prompt to model: {model}")
+        if state.get("model"):
+            model = state["model"]
+            typer.echo(f"INFO: Using selected model: {model}")
+        else:
+            model = route_prompt(prompt)
+            typer.echo(f"INFO: Routing prompt to model: {model}")
 
         # 2. Query the selected model
-        response = query_model(args.prompt, model)
-        print(f"SUCCESS: Response: {response}")
+        response = query_model(prompt, model)
+        typer.echo(f"SUCCESS: Response: {response}")
 
     except Exception as e:
-        print(f"ERROR: An unexpected error occurred: {e}", file=sys.stderr)
-        sys.exit(1)
+        typer.echo(f"ERROR: An unexpected error occurred: {e}", err=True)
+        raise typer.Exit(code=1)
 
 if __name__ == "__main__":
-    main()
+    app()
